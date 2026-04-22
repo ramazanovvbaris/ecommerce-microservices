@@ -1,0 +1,31 @@
+name: CI - User Service
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Kodu çək
+        uses: actions/checkout@v3
+
+      - name: Docker image build et
+        run: |
+          docker build -t user-service:latest ./services/user-service
+
+      - name: Köhnə konteyneri dayandır
+        run: |
+          docker stop user-service || true
+          docker rm user-service || true
+
+      - name: Yeni konteyneri işlət
+        run: |
+          docker run -d -p 3001:3001 --name user-service user-service:latest
+
+      - name: Health check
+        run: |
+          sleep 3
+          curl http://localhost:3001/health
